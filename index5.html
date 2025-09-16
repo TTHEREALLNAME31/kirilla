@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Super Klikacz</title>
+<style>
+body {
+  text-align: center;
+  font-family: Verdana, sans-serif;
+  padding: 50px;
+  background-color: #000; 
+  color: #fff; 
+}
+
+button {
+  padding: 15px 30px;
+  margin: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background-color: #fff; 
+  color: #000; 
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #000; 
+  color: #fff; 
+  border: 2px solid #fff;
+}
+
+#notice {
+  min-height: 20px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h2>Biało-Czarny Klikacz</h2>
+<p id="points">Punkty: 0</p>
+<p id="timer">Czas: 15</p>
+
+<button id="addPoint">+1</button>
+<button id="subPoint">-1</button>
+<p id="notice"></p>
+<button id="autoBuy">Kup auto-klikacz (20)</button>
+<button id="restart">Reset</button>
+
+<script>
+let punkty = 0;
+let autoKlik = false;
+let autoInterval;
+let czas = 15;
+let licznik;
+
+const pointsEl = document.getElementById('points');
+const timerEl  = document.getElementById('timer');
+const noticeEl = document.getElementById('notice');
+const addBtn   = document.getElementById('addPoint');
+const subBtn   = document.getElementById('subPoint');
+const buyBtn   = document.getElementById('autoBuy');
+const resetBtn = document.getElementById('restart');
+
+function pokazPunkty() {
+  pointsEl.textContent = 'Punkty: ' + punkty;
+  if(punkty >= 50) noticeEl.textContent = ' Niesamowite! 50 punktów!';
+  else if(punkty >= 10) noticeEl.textContent = ' Brawo! Masz 10 punktów!';
+  else noticeEl.textContent = '';
+}
+
+addBtn.addEventListener('click', () => { punkty++; pokazPunkty(); });
+subBtn.addEventListener('click', () => { if(punkty>0) punkty--; pokazPunkty(); });
+
+buyBtn.addEventListener('click', () => {
+  if(!autoKlik && punkty >= 20){
+    punkty -= 20;
+    autoKlik = true;
+    pokazPunkty();
+    autoInterval = setInterval(() => { punkty++; pokazPunkty(); }, 1000);
+  }
+});
+
+resetBtn.addEventListener('click', () => {
+  punkty = 0;
+  autoKlik = false;
+  clearInterval(autoInterval);
+  addBtn.disabled = subBtn.disabled = buyBtn.disabled = false;
+  pokazPunkty();
+  startCountdown();
+});
+
+function startCountdown(){
+  clearInterval(licznik);
+  czas = 15;
+  licznik = setInterval(()=>{
+    czas--;
+    timerEl.textContent = 'Czas: ' + czas;
+    if(czas <= 0){
+      clearInterval(licznik);
+      addBtn.disabled = subBtn.disabled = buyBtn.disabled = true;
+      noticeEl.textContent = ' Czas minął! Wynik: ' + punkty;
+    }
+  }, 1000);
+}
+
+
+pokazPunkty();
+startCountdown();
+</script>
+
+</body>
+</html>
