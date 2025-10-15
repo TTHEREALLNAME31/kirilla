@@ -35,6 +35,26 @@ button:hover {
   margin-top: 10px;
   font-weight: bold;
 }
+
+#ranking {
+  margin-top: 30px;
+  text-align: center;
+  display: inline-block;
+  background: #111;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #fff2;
+  width: 250px;
+}
+
+#ranking h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#ranking ol {
+  padding-left: 25px;
+}
 </style>
 </head>
 <body>
@@ -48,6 +68,11 @@ button:hover {
 <p id="notice"></p>
 <button id="autoBuy">Kup auto-klikacz (20)</button>
 <button id="restart">Reset</button>
+
+<div id="ranking">
+  <h3> Ranking</h3>
+  <ol id="rankingList"></ol>
+</div>
 
 <script>
 let punkty = 0;
@@ -63,16 +88,45 @@ const addBtn   = document.getElementById('addPoint');
 const subBtn   = document.getElementById('subPoint');
 const buyBtn   = document.getElementById('autoBuy');
 const resetBtn = document.getElementById('restart');
+const rankingList = document.getElementById('rankingList');
+
+
+function getRanking() {
+  return JSON.parse(localStorage.getItem('ranking')) || [];
+}
+
+function saveRanking(ranking) {
+  localStorage.setItem('ranking', JSON.stringify(ranking));
+}
+
+function showRanking() {
+  const ranking = getRanking();
+  rankingList.innerHTML = '';
+  ranking.slice(0, 10).forEach((item, index) => {
+    const li = document.createElement('li');
+  li.textContent = `${item.name}: ${item.score}`;
+    rankingList.appendChild(li);
+  });
+}
+
+function addToRanking(name, score) {
+  const ranking = getRanking();
+  ranking.push({ name, score });
+  ranking.sort((a, b) => b.score - a.score);
+  saveRanking(ranking);
+  showRanking();
+}
+
 
 function pokazPunkty() {
   pointsEl.textContent = 'Punkty: ' + punkty;
-  if(punkty >= 50) noticeEl.textContent = ' Niesamowite! 50 punktów!';
-  else if(punkty >= 10) noticeEl.textContent = ' Brawo! Masz 10 punktów!';
+  if (punkty >= 50) noticeEl.textContent = 'Niesamowite! 50 punktów!';
+  else if (punkty >= 10) noticeEl.textContent = 'Brawo! Masz 10 punktów!';
   else noticeEl.textContent = '';
 }
 
 addBtn.addEventListener('click', () => { punkty++; pokazPunkty(); });
-subBtn.addEventListener('click', () => { if(punkty>0) punkty--; pokazPunkty(); });
+subBtn.addEventListener('click', () => { if(punkty > 0) punkty--; pokazPunkty(); });
 
 buyBtn.addEventListener('click', () => {
   if(!autoKlik && punkty >= 20){
@@ -95,13 +149,18 @@ resetBtn.addEventListener('click', () => {
 function startCountdown(){
   clearInterval(licznik);
   czas = 15;
+  timerEl.textContent = 'Czas: ' + czas;
   licznik = setInterval(()=>{
     czas--;
     timerEl.textContent = 'Czas: ' + czas;
     if(czas <= 0){
       clearInterval(licznik);
       addBtn.disabled = subBtn.disabled = buyBtn.disabled = true;
-      noticeEl.textContent = ' Czas minął! Wynik: ' + punkty;
+      noticeEl.textContent = 'Czas minął! Wynik: ' + punkty;
+
+      
+      const nick = prompt('Podaj swój nick do rankingu:') || 'Anonim';
+      addToRanking(nick, punkty);
     }
   }, 1000);
 }
@@ -109,6 +168,7 @@ function startCountdown(){
 
 pokazPunkty();
 startCountdown();
+showRanking();
 </script>
 
 </body>
